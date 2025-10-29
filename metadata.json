@@ -1,0 +1,5 @@
+{
+  "name": "K-Beauty Personal Shopper",
+  "description": "A web-based personalized skincare recommendation service for users in Korea. It leverages intelligent search and ingredient analysis to find the perfect skincare products from Korean e-commerce websites, tailored to an individual's unique skin type, concerns, budget, and preferences.",
+  "requestFramePermissions": []
+}
