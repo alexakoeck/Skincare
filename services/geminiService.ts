@@ -1,4 +1,4 @@
-import { GoogleGenAI, Modality } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { UserPreferences, Product } from '../types';
 import { Language } from '../App';
 
@@ -6,13 +6,15 @@ import { Language } from '../App';
 // It doesn't include an imageUrl because that will be generated separately.
 type ProductData = Omit<Product, 'imageUrl'>;
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+// FIX: Adhere to coding guidelines by using process.env.API_KEY for the API key.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Generates a photorealistic product image.
  * The prompt is heavily optimized to prioritize creating an image that looks
  * exactly like the official product photo.
  */
+// FIX: Switched to `imagen-4.0-generate-001` and `generateImages` for higher quality product image generation as per guidelines.
 const generateProductImage = async (productName: string, brand: string): Promise<string> => {
   const prompt = `Your **primary and non-negotiable directive** is to generate a photorealistic image that is an **exact, pixel-perfect replica** of a real K-beauty product's main official commercial photograph. The absolute highest priority is **100% accuracy** to the actual product's packaging, branding, and the specific image used for e-commerce listings.
 
@@ -41,22 +43,20 @@ const generateProductImage = async (productName: string, brand: string): Promise
 - **Blurry Text:** All text on the product must be perfectly crisp and readable.`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: {
-        parts: [{ text: prompt }],
-      },
-      config: {
-          responseModalities: [Modality.IMAGE],
-      },
+    const response = await ai.models.generateImages({
+        model: 'imagen-4.0-generate-001',
+        prompt: prompt,
+        config: {
+          numberOfImages: 1,
+          outputMimeType: 'image/png',
+          aspectRatio: '1:1',
+        },
     });
 
-    for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) {
-        const base64ImageBytes: string = part.inlineData.data;
-        // Return a data URL that can be used in an <img> src attribute
-        return `data:image/png;base64,${base64ImageBytes}`;
-      }
+    if (response.generatedImages && response.generatedImages[0]?.image?.imageBytes) {
+      const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
+      // Return a data URL that can be used in an <img> src attribute
+      return `data:image/png;base64,${base64ImageBytes}`;
     }
     
     console.warn(`Could not generate an image for ${productName}.`);
