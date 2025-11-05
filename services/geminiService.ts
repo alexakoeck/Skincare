@@ -80,6 +80,8 @@ export const getRecommendations = async (preferences: UserPreferences, promptTex
   Your goal is to provide highly relevant product recommendations that perfectly match all the user's criteria.
   For each product, provide a concise, personalized explanation for why it's a good fit.
   
+  **CRITICAL PRICE REQUIREMENT**: The "price" you return MUST be the current, standard list price (not a temporary sale price) found directly on the Korean e-commerce website for that product. Double-check the price using your search tool to ensure maximum accuracy. Do not estimate or use cached prices.
+
   **CRITICAL URL REQUIREMENT**: For each product you recommend, you MUST find the product's official name in Hangul (Korean). Then, you MUST construct the \`productUrl\` by taking the e-commerce website's homepage and appending a search query for that Hangul product name.
   
   For example, if the product is "Aestura Atobarrier365 Cream" and you find it on Olive Young, the Hangul name is "에스트라 아토베리어365 크림". The resulting \`productUrl\` MUST be "https://www.oliveyoung.co.kr/store/search/getSearchMain.do?query=에스트라%20아토베리어365%20크림".

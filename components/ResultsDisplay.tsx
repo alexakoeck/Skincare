@@ -54,7 +54,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ isLoading, error
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-center text-pink-800 mb-8 font-display">Your Top 5 Recommendations</h2>
+      <h2 className="text-3xl font-bold text-center text-pink-800 mb-8 font-display">Your Top Recommendations</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {recommendations.map((product, index) => (
           <ProductCard key={`${product.productName}-${index}`} product={product} />
