@@ -47,7 +47,7 @@ export const PreferenceForm: React.FC<PreferenceFormProps> = ({ preferences, set
             name="age"
             value={preferences.age}
             onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 bg-pink-50"
             min="10"
             max="99"
           />
