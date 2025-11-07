@@ -47,7 +47,7 @@ const getSystemInstruction = (preferences: UserPreferences, promptText: string, 
 
 const generateProductImage = async (product: Omit<Product, 'imageUrl'>): Promise<string> => {
     try {
-        const prompt = `Generate a photorealistic, high-quality e-commerce product image for the Korean skincare product: '${product.productName}' by '${product.brand}'. The image must be as accurate as possible to the real product's packaging design, color, and branding. Place the product on a clean, minimalist, light-colored background (like white or very light pink) with soft, professional studio lighting. The image should look like an official product photo from a top online beauty store. Do not add any extra text or objects.`;
+        const prompt = `Create a photorealistic product photograph of the Korean skincare item: '${product.productName}' from the brand '${product.brand}'. The goal is maximum accuracy. The image must replicate the actual product's packaging, including logos, typography, colors, and container shape, as closely as possible to the real-world version sold in stores. The product should be presented against a simple, neutral background with professional studio lighting, suitable for a premium e-commerce website. Do not add any other elements to the image.`;
 
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
