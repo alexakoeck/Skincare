@@ -57,7 +57,7 @@ export const translations = {
   },
   errorTitle: {
     en: 'Oops! Something went wrong.',
-    ko: 'おっと！何か問題が発生しました。',
+    ko: '죄송합니다, 문제가 발생했습니다.',
   },
   errorMessage: {
       en: "Sorry, we couldn't find products at this time. Please try adjusting your search or try again later.",

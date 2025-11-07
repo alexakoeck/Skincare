@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/getRecommendations.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  }
+}
