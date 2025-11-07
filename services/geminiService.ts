@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
 import { UserPreferences, Product } from '../types';
 import { Language } from '../App';
 
@@ -19,10 +19,10 @@ const getSystemInstruction = (preferences: UserPreferences, promptText: string, 
     
     당신의 목표는 사용자의 모든 기준에 완벽하게 부합하는 매우 관련성 높은 제품 추천을 제공하는 것입니다.
     각 제품에 대해, 왜 그것이 좋은 선택인지 간결하고 개인화된 설명을 한국어로 제공해야 합니다.
-    imageUrl에 대해서는, 제품을 대표하는 고품질 이미지를 찾아주세요.
     
     당신의 전체 응답은 객체로 이루어진 단일하고 유효한 JSON 배열이어야 합니다. 다른 텍스트, 주석 또는 마크다운을 포함하지 마십시오.
-    각 객체는 "productName", "brand", "price"(숫자), "productUrl", "explanation", "imageUrl" 속성을 가져야 합니다. 모든 텍스트 값은 한국어로 작성되어야 합니다.`;
+    각 객체는 "productName", "brand", "price"(숫자), "productUrl", "explanation" 속성을 가져야 합니다. 
+    "productUrl"의 경우, 제품 페이지로 직접 연결되는 링크가 아닌, 해당 이커머스 웹사이트의 홈페이지에서 제품을 검색하는 검색 링크를 제공해야 합니다. 예를 들어, 올리브영에서 '구달 청귤 비타 C 잡티 케어 세럼'을 찾았다면 URL은 'https://www.oliveyoung.co.kr/store/search/getSearchMain.do?query=구달+청귤+비타+C+잡티+케어+세럼'이 되어야 합니다. 쿠팡이라면 'https://www.coupang.com/np/search?q=구달+청귤+비타+C+잡티+케어+세럼'이 되어야 합니다. 모든 텍스트 값은 한국어로 작성되어야 합니다.`;
   }
 
   // Default to English
@@ -39,12 +39,36 @@ const getSystemInstruction = (preferences: UserPreferences, promptText: string, 
   
   Your goal is to provide highly relevant product recommendations that perfectly match all the user's criteria.
   For each product, provide a concise, personalized explanation for why it's a good fit.
-  For the imageUrl, find a representative, high-quality image of the product.
   
   Your entire response MUST be a single, valid JSON array of objects. Do not include any other text, commentary, or markdown.
-  Each object must have the following properties: "productName", "brand", "price" (as a number), "productUrl", "explanation", "imageUrl".`;
+  Each object must have the following properties: "productName", "brand", "price" (as a number), "productUrl", "explanation".
+  For the "productUrl", you MUST provide a search link to the product on the e-commerce website's homepage, not a direct link to the product page. For example, if the product is 'Goodal Green Tangerine Vitamin C Serum' found on Olive Young, the URL should be 'https://www.oliveyoung.co.kr/store/search/getSearchMain.do?query=Goodal+Green+Tangerine+Vitamin+C+Serum'. If it's on Coupang, it should be 'https://www.coupang.com/np/search?q=Goodal+Green+Tangerine+Vitamin+C+Serum'.`;
 };
 
+const generateProductImage = async (product: Omit<Product, 'imageUrl'>): Promise<string> => {
+    try {
+        const prompt = `Generate a photorealistic, high-quality e-commerce product image for the Korean skincare product: '${product.productName}' by '${product.brand}'. The image must be as accurate as possible to the real product's packaging design, color, and branding. Place the product on a clean, minimalist, light-colored background (like white or very light pink) with soft, professional studio lighting. The image should look like an official product photo from a top online beauty store. Do not add any extra text or objects.`;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: { parts: [{ text: prompt }] },
+            config: {
+                responseModalities: [Modality.IMAGE],
+            },
+        });
+
+        for (const part of response.candidates[0].content.parts) {
+            if (part.inlineData) {
+                const base64ImageBytes: string = part.inlineData.data;
+                return `data:image/png;base64,${base64ImageBytes}`;
+            }
+        }
+        return 'https://picsum.photos/300/300';
+    } catch (error) {
+        console.error(`Failed to generate image for ${product.productName}:`, error);
+        return 'https://picsum.photos/300/300';
+    }
+};
 
 /**
  * Gets K-Beauty recommendations from the Gemini API.
@@ -74,13 +98,20 @@ export const getRecommendations = async (preferences: UserPreferences, promptTex
     }
     
     const jsonString = jsonMatch[1] || jsonMatch[2];
-    const products: Product[] = JSON.parse(jsonString).slice(0, 5);
+    const productsWithoutImages: Omit<Product, 'imageUrl'>[] = JSON.parse(jsonString).slice(0, 5);
     
-    if (!Array.isArray(products)) {
+    if (!Array.isArray(productsWithoutImages)) {
         return [];
     }
 
-    return products;
+    const productsWithImages = await Promise.all(
+        productsWithoutImages.map(async (product) => {
+            const imageUrl = await generateProductImage(product);
+            return { ...product, imageUrl };
+        })
+    );
+
+    return productsWithImages;
 
   } catch (error) {
     console.error("Error fetching or parsing recommendations from Gemini API. Raw response text was:", responseText);
