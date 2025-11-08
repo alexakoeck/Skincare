@@ -33,9 +33,8 @@ This project is built with React, Vite, and Tailwind CSS.
 3.  **Set up your environment variables:**
     Create a file named `.env.local` in the root of your project and add your Gemini API key:
     ```
-    VITE_GEMINI_API_KEY=YOUR_API_KEY_HERE
+    GEMINI_API_KEY=YOUR_API_KEY_HERE
     ```
-    > **Note:** This project uses [Vite](https://vitejs.dev/), which requires environment variables exposed to the browser to be prefixed with `VITE_`.
 
 4.  **Run the development server:**
     ```bash
@@ -58,7 +57,7 @@ You can deploy this application to Vercel with a few clicks.
 3.  **Configure Environment Variables:**
     - In the project settings on Vercel, navigate to the **Settings > Environment Variables** section.
     - Add a new environment variable:
-      - **Name:** `VITE_GEMINI_API_KEY`
+      - **Name:** `GEMINI_API_KEY`
       - **Value:** Paste your Gemini API key here.
     - Click "Save".
 
