@@ -2,6 +2,7 @@ import { GoogleGenAI, Modality } from "@google/genai";
 import { UserPreferences, Product, SkinType, DeliveryOption } from '../types';
 import { Language } from '../App';
 
+// FIX: Per coding guidelines, the API key must be sourced from `process.env.API_KEY`.
 const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
 
 const getSystemInstruction = (preferences: UserPreferences, promptText: string, language: Language): string => {
