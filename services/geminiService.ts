@@ -65,29 +65,47 @@ const getSystemInstruction = (preferences: UserPreferences, promptText: string, 
 };
 
 const generateProductImage = async (product: Omit<Product, 'imageUrl'>): Promise<string> => {
-    try {
-        const prompt = `Create a photorealistic product photograph of the Korean skincare item: '${product.productName}' from the brand '${product.brand}'. The goal is maximum accuracy. The image must replicate the actual product's packaging, including logos, typography, colors, and container shape, as closely as possible to the real-world version sold in stores. The product should be presented against a simple, neutral background with professional studio lighting, suitable for a premium e-commerce website. Do not add any other elements to the image.`;
+    const retries = 3;
+    let lastError: unknown = null;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: { parts: [{ text: prompt }] },
-            config: {
-                responseModalities: [Modality.IMAGE],
-            },
-        });
+    for (let i = 0; i < retries; i++) {
+        try {
+            const prompt = `Create a photorealistic product photograph of the Korean skincare item: '${product.productName}' from the brand '${product.brand}'. The goal is maximum accuracy. The image must replicate the actual product's packaging, including logos, typography, colors, and container shape, as closely as possible to the real-world version sold in stores. The product should be presented against a simple, neutral background with professional studio lighting, suitable for a premium e-commerce website. Do not add any other elements to the image.`;
+            
+            console.log(`Generating image for "${product.productName}" (Attempt ${i + 1}/${retries})...`);
+            
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash-image',
+                contents: { parts: [{ text: prompt }] },
+                config: {
+                    responseModalities: [Modality.IMAGE],
+                },
+            });
 
-        for (const part of response.candidates[0].content.parts) {
-            if (part.inlineData) {
-                const base64ImageBytes: string = part.inlineData.data;
-                return `data:image/png;base64,${base64ImageBytes}`;
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    const base64ImageBytes: string = part.inlineData.data;
+                    console.log(`Successfully generated image for "${product.productName}".`);
+                    return `data:image/png;base64,${base64ImageBytes}`;
+                }
+            }
+            
+            lastError = new Error("API response did not contain image data.");
+            console.warn(`Image generation for ${product.productName} did not return image data. Attempt ${i + 1}/${retries}.`);
+
+        } catch (error) {
+            lastError = error;
+            console.error(`Failed to generate image for ${product.productName} on attempt ${i + 1}/${retries}:`, error);
+            if (i < retries - 1) {
+                await new Promise(res => setTimeout(res, 1500)); // Wait 1.5 seconds before retrying
             }
         }
-        return 'https://picsum.photos/300/300';
-    } catch (error) {
-        console.error(`Failed to generate image for ${product.productName}:`, error);
-        return 'https://picsum.photos/300/300';
     }
+    
+    console.error(`All ${retries} attempts to generate an image for "${product.productName}" have failed.`);
+    throw lastError || new Error(`Failed to generate image for ${product.productName} after ${retries} attempts.`);
 };
+
 
 /**
  * Gets K-Beauty recommendations from the Gemini API.

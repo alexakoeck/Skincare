@@ -16,8 +16,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, language }) =
         <img 
           src={product.imageUrl} 
           alt={product.productName} 
-          className="w-full h-48 object-cover" 
-          onError={(e) => { e.currentTarget.src = 'https://picsum.photos/300/300' }}
+          className="w-full h-48 object-cover"
         />
         <div className="absolute top-2 right-2 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full">
           ~{product.price.toLocaleString()} KRW
