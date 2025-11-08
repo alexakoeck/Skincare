@@ -137,12 +137,11 @@ export const getRecommendations = async (preferences: UserPreferences, promptTex
         return [];
     }
 
-    const productsWithImages = await Promise.all(
-        productsWithoutImages.map(async (product) => {
-            const imageUrl = await generateProductImage(product);
-            return { ...product, imageUrl };
-        })
-    );
+    const productsWithImages: Product[] = [];
+    for (const product of productsWithoutImages) {
+        const imageUrl = await generateProductImage(product);
+        productsWithImages.push({ ...product, imageUrl });
+    }
 
     return productsWithImages;
 
